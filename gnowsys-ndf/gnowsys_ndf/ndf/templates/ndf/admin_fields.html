@@ -61,7 +61,6 @@
 
 {% elif fields_type == "list" %}
 <div id="list_drawer" style="border-spacing:0px;">
-  {#% edit_drawer_widget fields_name groupid node %#}
 
   {% get_selected_drawer_items fields_name fields_value as drawer_items %}
 
@@ -80,6 +79,9 @@
     {% include 'ndf/widget_selector.html' with for=fields_name all_options=all_items selected_options=drawer_items %}
 
   {% elif fields_name == "prior_node" %} 
+
+  {% get_selected_drawer_items fields_name fields_value as drawer_items %}
+
   {% get_all_priornode_items fields_name fields_value as all_prior_items %}
 
     {% include 'ndf/widget_selector.html' with for=fields_name all_options=all_prior_items selected_options=drawer_items %}

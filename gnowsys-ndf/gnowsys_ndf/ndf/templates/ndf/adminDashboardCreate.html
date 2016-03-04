@@ -32,8 +32,6 @@
 </div>
 </table></div>
 {% endif %}
-
- 
 <h2> {{node.name}}</h2>
 <div style="display:table;  border:1px;   border-spacing:15px; " class="small-12 columns">
 {% for list in definitionlist %}
@@ -196,7 +194,6 @@
 		flag = 0;
 		var memb = getSelValuesHiddenElement('member_of','{{class_name}}');
 		var meta = getSelValuesHiddenElement('meta_type_set','{{class_name}}');
-
 		var ats = getSelValuesHiddenElement('attribute_type_set','{{class_name}}');
 		var rts = getSelValuesHiddenElement('relation_type_set','{{class_name}}');
 		var typ = getSelValuesHiddenElement('type_of','{{class_name}}');

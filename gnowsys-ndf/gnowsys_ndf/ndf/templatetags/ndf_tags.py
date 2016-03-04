@@ -669,7 +669,11 @@ def list_widget( fields_name, fields_type, fields_value, template1='ndf/option_w
 				drawer1[str(each._id)]=each
 		return {'template': template1, 'widget_for': fields_name, 'drawer1': drawer1, 'selected_value': fields_value}
 
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 02a9e1411410f9f8ee2f5e0639b65882f6192ff8
 @get_execution_time
 @register.assignment_tag
 @register.inclusion_tag('ndf/admin_fields.html')
@@ -677,11 +681,15 @@ def get_all_drawer_items(fields_name,fields_value):
 	drawer1 = {}
 	alltypes = ["GSystemType","MetaType","AttributeType","RelationType"]
 	fields_selection2 = ["meta_type_set","attribute_type_set","relation_type_set","member_of","type_of"]
+<<<<<<< HEAD
 
+=======
+>>>>>>> 02a9e1411410f9f8ee2f5e0639b65882f6192ff8
 	fields = {"subject_type":"GSystemType", "object_type":"GSystemType", "meta_type_set":"MetaType", "attribute_type_set":"AttributeType", "relation_type_set":"RelationType", "member_of":"MetaType", "prior_node":"all_types", "applicable_node_type":"NODE_TYPE_CHOICES", "subject_applicable_nodetype":"NODE_TYPE_CHOICES", "object_applicable_nodetype":"NODE_TYPE_CHOICES", "data_type": "DATA_TYPE_CHOICES", "type_of": "GSystemType","language":"GSystemType"}
 	types = fields[fields_name]
 
 	if fields_name in fields_selection2:
+<<<<<<< HEAD
 		# fields_value_id_list = []
 
 		if types in alltypes:
@@ -697,15 +705,29 @@ def get_all_drawer_items(fields_name,fields_value):
 
 
 
+=======
+		if types in alltypes:
+			for each in node_collection.find({"_type": types}):
+				drawer1[each] = each
+		return drawer1
+	return []
+
+>>>>>>> 02a9e1411410f9f8ee2f5e0639b65882f6192ff8
 @get_execution_time
 @register.assignment_tag
 @register.inclusion_tag('ndf/admin_fields.html')
 def get_selected_drawer_items(fields_name,fields_value):
+<<<<<<< HEAD
 	drawer1 = {}
 	drawer2 = None
 	alltypes = ["GSystemType","MetaType","AttributeType","RelationType"]
 	fields_selection2 = ["meta_type_set","attribute_type_set","relation_type_set","prior_node","member_of","type_of"]
 
+=======
+	drawer2 = None
+	alltypes = ["GSystemType","MetaType","AttributeType","RelationType"]
+	fields_selection2 = ["meta_type_set","attribute_type_set","relation_type_set","prior_node","member_of","type_of"]
+>>>>>>> 02a9e1411410f9f8ee2f5e0639b65882f6192ff8
 	fields = {"subject_type":"GSystemType", "object_type":"GSystemType", "meta_type_set":"MetaType", "attribute_type_set":"AttributeType", "relation_type_set":"RelationType", "member_of":"MetaType", "prior_node":"all_types", "applicable_node_type":"NODE_TYPE_CHOICES", "subject_applicable_nodetype":"NODE_TYPE_CHOICES", "object_applicable_nodetype":"NODE_TYPE_CHOICES", "data_type": "DATA_TYPE_CHOICES", "type_of": "GSystemType","language":"GSystemType"}
 	types = fields[fields_name]
 
@@ -743,6 +765,7 @@ def get_all_priornode_items(fields_name,fields_value):
 	fields = {"meta_type_set":"MetaType", "relation_type_set":"RelationType", "member_of":"MetaType", "prior_node":"all_types","type_of": "GSystemType"}
 	types = fields[fields_name]
 
+<<<<<<< HEAD
 	# fields = {"prior_node":"all_types"}
 	# types = fields[fields_name]
 	# if types in ["all_types"]:
@@ -754,6 +777,12 @@ def get_all_priornode_items(fields_name,fields_value):
 				# print elem,"\n\n"
 			return drawer1
 		# print each
+=======
+	for each in alltypes:
+		for eachnode in node_collection.find({"_type":each}):
+			drawer[eachnode] = eachnode._id
+	return drawer
+>>>>>>> 02a9e1411410f9f8ee2f5e0639b65882f6192ff8
 
 	return []
 
@@ -1898,9 +1927,10 @@ def get_policy(group, user):
 def get_input_fields(fields_type, fields_name, translate=None ):
 	"""Get html tags 
 	"""
-	field_type_list = ["meta_type_set","attribute_type_set","relation_type_set","prior_node","member_of","type_of"]
-	return {"fields_name":fields_name, "fields_type": fields_type[0], "fields_value": fields_type[1], 
-					"field_type_list":field_type_list,"translate":translate }
+	# field_type_list = ["meta_type_set","attribute_type_set","relation_type_set","prior_node","member_of","type_of"]
+	return {"fields_name":fields_name, "fields_type": fields_type[0], "fields_value": fields_type[1],"translate":translate }
+	# return {"fields_name":fields_name, "fields_type": fields_type[0], "fields_value": fields_type[1], 
+					# "field_type_list":field_type_list,"translate":translate }
 	# return {'template': 'ndf/admin_fields.html', 
 	# 				"fields_name":fields_name, "fields_type": fields_type[0], "fields_value": fields_type[1], 
 	# 				"field_type_list":field_type_list,"translate":translate}

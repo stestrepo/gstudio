@@ -34,9 +34,7 @@ HOW TO USE
     should be called (before save) 3 times with appropriate first args (<for>).
 
 -->
-
 {% endcomment %}
-
 
 <script type="text/javascript" src="/static/ndf/bower_components/mousetrap/mousetrap.js"></script>
 <script type="text/javascript" src="/static/ndf/bower_components/jquery-ui/jquery-ui.min.js"></script>
@@ -169,7 +167,7 @@ HOW TO USE
       <div class="select-search-container" data-selector-widget-for="{{for}}">
         <i class="fi-play" ></i>
         <div class="selected-items" data-selector-widget-for="{{for}}"></div>
-        <input type="text" class="search-text mousetrap" placeholder="Search APPs" autocomplete="off" data-selector-widget-for="{{for}}">
+        <input type="text" class="search-text mousetrap" placeholder="Type To Search" autocomplete="off" data-selector-widget-for="{{for}}">
       </div>
     </div>
   </div>
@@ -206,8 +204,6 @@ HOW TO USE
   </div>
 
 </div>
-
-
 <script type="text/javascript">
 
   // querySelector, jQuery style but in pure JS.
@@ -244,8 +240,7 @@ HOW TO USE
     $(".selected-items").sortable({revert: true, scroll: true});
   })
 
-  var selected_options = [ {% for each_opt in selected_options %}"{{each_opt.pk|safe}}"{% if not forloop.last %},{% endif %}{% endfor %} ];
-
+  var selected_options = [ {% for each_opt in selected_options %}"{{each_opt.pk}}"{% if not forloop.last %},{% endif %}{% endfor %} ];
 
   // toBeSelected = document.getElementById('to-be-selected');
   var toBeSelected = $s('#' + selectorWidgetID + ' .to-be-selected');
@@ -294,6 +289,7 @@ HOW TO USE
 
     // creating new div element
     var selDiv = document.createElement('div');
+    // var linebreak = document.createElement('br');
     selDiv.classList.add('label', 'secondary', 'selection');
     this.onclick = detachEvent;
     this.classList.remove('traversing-el');
@@ -307,6 +303,7 @@ HOW TO USE
     closeBtn.onmouseenter = lineThrough;
     closeBtn.onmouseleave = removeLineThrough;
     selDiv.appendChild(closeBtn);
+    // selDiv.appendChild(linebreak);
 
     var selectorWidgetFor = this.getAttribute('data-selector-widget-for');
     selectedItems = $s('.selected-items[data-selector-widget-for="'+ selectorWidgetFor +'"]');
@@ -364,7 +361,6 @@ HOW TO USE
         }
     };
   }
-
   
   function showOptionItems () {
 
@@ -406,13 +402,11 @@ HOW TO USE
       if(!isHidden(toBeSelectedList[i]))
       {
         var toBeSelected = toBeSelectedList[i];
-
         // var sItems = toBeSelected.children;
         // if(sItems) { sItems.classList.remove('traversing-el'); };
         toBeSelected.classList.add('hide');
       }
     };
-
     // console.log(this);
     // var parentSelectorWidget = closest(this, '.selector-widget');
 
@@ -464,37 +458,19 @@ HOW TO USE
                     hidden element then specify id value.
      */
 
-    console.log(idToAppend)
-    console.log(selectorWidgetFor)
-
     var idToAppend = idToAppend || false;
     var hiddenInput = document.createElement('input');
     console.log(hiddenInput)
     hiddenInput.type = 'hidden';
     hiddenInput.name = selectorWidgetFor;
-    // console.log("selectorWidgetFor")
-    // console.log(selectorWidgetFor)
     hiddenInput.value = getSelectedValues(selectorWidgetFor);
     // hiddenInput.value = JSON.stringify(getSelectedValues(selectorWidgetFor));
-    // var hd = typeof(hiddenInput.value)
-    // console.log(hd)
 
-    // console.log("json")
-    // console.log(JSON.stringify(getSelectedValues(selectorWidgetFor)))
     if (idToAppend) {
+      // document.getElementById(idToAppend).appendChild(hiddenInput.value);
       document.getElementById(idToAppend).appendChild(hiddenInput);
-      // var checkws = document.getElementById(idToAppend);
-
-      // document.body.appendChild(hiddenInput.value);
-
-      // $(idToAppend).append(hiddenInput);
-
     }
-    // var requiredVal= $(hiddenInput).val();
-    // console.log("requiredVal")
-    // console.log(requiredVal)
     return hiddenInput;
-    // console.log(hiddenInput)
   }
  
   document.querySelector('html').onclick = function (e) {
@@ -585,9 +561,6 @@ HOW TO USE
     Mousetrap.bind('tab', traverseListDown );
     Mousetrap.bind('enter', function(){
       // var elemToBeSelected = $s('#to-be-selected > .item.traversing-el');
-
-
-
       var elemToBeSelectedList = $sa('.selector-widget .to-be-selected .item.traversing-el');
 
       if(elemToBeSelectedList.length > 0)
@@ -624,7 +597,6 @@ HOW TO USE
    var matchesSelector = elem.matches || elem.webkitMatchesSelector || elem.mozMatchesSelector || elem.msMatchesSelector;
    // console.log(matchesSelector)
     while (elem) {
-            // console.log(elem);
         if (matchesSelector && matchesSelector.bind(elem)(selector)) {
             return elem;
         } else {
