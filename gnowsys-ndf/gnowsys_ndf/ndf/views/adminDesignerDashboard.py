@@ -162,7 +162,7 @@ def adminDesignerDashboardClassCreate(request, class_name='GSystemType', node_id
             elif value == list: 
                 if request.POST.get(key,""):
                     new_instance_type[key] = request.POST.get(key,"").split(",")
-
+                    
             elif type(value) == list:
                 if request.POST.get(key,""):
                     if key in ("tags","applicable_node_type"):
@@ -285,7 +285,6 @@ def adminDesignerDashboardClassCreate(request, class_name='GSystemType', node_id
         
         for key, value in class_structure.items():
             class_structure_with_values[key] = [class_structure[key][0], new_instance_type[key]]
-
 
         variable = RequestContext(request, {'node': new_instance_type,
                                             'class_name': class_name, 'class_structure': class_structure_with_values, 'url': "designer", 

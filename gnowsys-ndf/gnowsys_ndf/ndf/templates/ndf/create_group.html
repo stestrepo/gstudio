@@ -312,7 +312,11 @@ this template is modified. So for the fields in the template it supports -
     {% all_gapps as all_gapps %}
     {% get_group_gapps node.pk|default:None as group_gapps %}
 
+    {# {% for each in all_gapps %} {{each}} {% endfor %}  #}
+    {# {% for each in group_gapps %} {{each}} {% endfor %}  #}
 
+
+    {# {{node.pk}} #}
     <div class="row">
       <div class="small-12 medium-6 medium-centered columns">
         <label>Select Apps:</label>
@@ -386,8 +390,10 @@ this template is modified. So for the fields in the template it supports -
       event.preventDefault();
     }
 
-    getSelValuesHiddenElement('apps_to_set', 'create_group');
 
+    var selval = getSelValuesHiddenElement('apps_to_set', 'create_group');
+
+    console.log(selval)
   });
 
 
