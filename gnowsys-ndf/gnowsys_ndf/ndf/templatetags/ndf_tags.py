@@ -637,6 +637,30 @@ def edit_drawer_widget(field, group_id, node=None, page_no=1, checked=None, **kw
 
 @get_execution_time
 @register.inclusion_tag('tags/dummy.html')
+def object_type_created(opt_list, option_list, template1='ndf/option_widget.html'):
+	opt = []
+	for e in option_list:
+		print e,"\n"
+		opt.append(e)
+
+	# if option_list:
+		# op = option_list
+		# option_list = []
+		# for e in op:
+			# opt.append(e)
+
+
+	# return {'template': template1, 'widget_for': fields_name, 'drawer1': drawer1, 'selected_value': fields_value}
+	return {'template': template1,'widget_for':'object_type_created', 'selected_value':option_list, 'drawer1':opt_list, 'dummy':'true' }
+
+
+
+
+
+
+
+@get_execution_time
+@register.inclusion_tag('tags/dummy.html')
 # def list_widget( fields_name, fields_type, fields_value, template1='ndf/option_widget.html',template2='ndf/drawer_widget.html'):
 def list_widget( fields_name, fields_type, fields_value, template1='ndf/option_widget.html'):
 	drawer1 = {}
@@ -720,6 +744,72 @@ def list_widget( fields_name, fields_type, fields_value, template1='ndf/option_w
 
 
 
+	
+@get_execution_time
+@register.assignment_tag
+@register.inclusion_tag('ndf/admin_fields.html')
+def get_all_drawer_items(fields_name,fields_value):
+	drawer1 = {}
+	alltypes = ["GSystemType","MetaType","AttributeType","RelationType"]
+	fields_selection2 = ["meta_type_set","attribute_type_set","relation_type_set","member_of","type_of"]
+	fields = {"subject_type":"GSystemType", "object_type":"GSystemType", "meta_type_set":"MetaType", "attribute_type_set":"AttributeType", "relation_type_set":"RelationType", "member_of":"MetaType", "prior_node":"all_types", "applicable_node_type":"NODE_TYPE_CHOICES", "subject_applicable_nodetype":"NODE_TYPE_CHOICES", "object_applicable_nodetype":"NODE_TYPE_CHOICES", "data_type": "DATA_TYPE_CHOICES", "type_of": "GSystemType","language":"GSystemType"}
+	types = fields[fields_name]
+
+	if fields_name in fields_selection2:
+		if types in alltypes:
+			for each in node_collection.find({"_type": types}):
+				drawer1[each] = each
+		return drawer1
+	return []
+
+@get_execution_time
+@register.assignment_tag
+@register.inclusion_tag('ndf/admin_fields.html')
+def get_selected_drawer_items(fields_name,fields_value):
+	drawer2 = None
+	alltypes = ["GSystemType","MetaType","AttributeType","RelationType"]
+	fields_selection2 = ["meta_type_set","attribute_type_set","relation_type_set","prior_node","member_of","type_of"]
+	fields = {"subject_type":"GSystemType", "object_type":"GSystemType", "meta_type_set":"MetaType", "attribute_type_set":"AttributeType", "relation_type_set":"RelationType", "member_of":"MetaType", "prior_node":"all_types", "applicable_node_type":"NODE_TYPE_CHOICES", "subject_applicable_nodetype":"NODE_TYPE_CHOICES", "object_applicable_nodetype":"NODE_TYPE_CHOICES", "data_type": "DATA_TYPE_CHOICES", "type_of": "GSystemType","language":"GSystemType"}
+	types = fields[fields_name]
+
+	if fields_name in fields_selection2:
+		fields_value_id_list = []
+
+		if fields_value:
+			for each in fields_value:
+				if type(each) == ObjectId:
+					fields_value_id_list.append(each)
+				else:
+					fields_value_id_list.append(each._id)
+
+		if fields_value_id_list:
+			drawer2 = []
+			for each_id in fields_value_id_list:
+				each_node = node_collection.one({'_id': each_id})
+				if each_node:
+					drawer2.append(each_node)
+
+		return drawer2
+
+	return []
+
+
+@get_execution_time
+@register.assignment_tag
+@register.inclusion_tag('ndf/admin_fields.html')
+def get_all_priornode_items(fields_name,fields_value):
+	drawer1 = {}
+	drawer = {}
+	alltypes = ["GSystemType","MetaType","AttributeType","RelationType"]
+	fields = {"meta_type_set":"MetaType", "relation_type_set":"RelationType", "member_of":"MetaType", "prior_node":"all_types","type_of": "GSystemType"}
+	types = fields[fields_name]
+
+	for each in alltypes:
+		for eachnode in node_collection.find({"_type":each}):
+			drawer[eachnode] = eachnode._id
+	return drawer
+
+	return []
 
 
 @get_execution_time
