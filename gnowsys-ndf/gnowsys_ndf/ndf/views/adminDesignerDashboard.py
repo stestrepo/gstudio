@@ -33,11 +33,11 @@ def adminDesignerDashboardClass(request, class_name='GSystemType'):
         attribute_type_set = []
         relation_type_set = [] 
         for e in each.member_of:
-            member_of_list.append(node_collection.one({'_id':e}).name+" ")
+            member_of_list.append(node_collection.one({'_id':e}).name)
             # member_of_list.append(node_collection.one({'_id':e}).name+" - "+str(e))
         
         for members in each.member_of:
-            member.append(node_collection.one({ '_id': members}).name+" ")
+            member.append(node_collection.one({ '_id': members}).name)
             # member.append(node_collection.one({ '_id': members}).name+" - "+str(members))
         
         # for coll in each.collection_set:
@@ -45,14 +45,14 @@ def adminDesignerDashboardClass(request, class_name='GSystemType'):
         
         if class_name in ("GSystemType"):
             for at_set in each.attribute_type_set:
-                attribute_type_set.append(at_set.name+" ")
+                attribute_type_set.append(at_set.name)
                 # attribute_type_set.append(at_set.name+" - "+str(at_set._id))
             for rt_set in each.relation_type_set:
-                relation_type_set.append(rt_set.name+" ")
+                relation_type_set.append(rt_set.name)
                 # relation_type_set.append(rt_set.name+" - "+str(rt_set._id))
-            objects_details.append({"Id":each._id,"Title":each.name,"Type":",".join(member),"Author":User.objects.get(id=each.created_by).username,"Creation":each.created_at,'member_of':",".join(member_of_list), "collection_list":",".join(collection_list), "attribute_type_set":",".join(attribute_type_set), "relation_type_set":",".join(relation_type_set)})
+            objects_details.append({"Id":each._id,"Title":each.name,"Type":", ".join(member),"Author":User.objects.get(id=each.created_by).username,"Creation":each.created_at,'member_of':", ".join(member_of_list), "collection_list":", ".join(collection_list), "attribute_type_set":", ".join(attribute_type_set), "relation_type_set":", ".join(relation_type_set)})
         else :
-		objects_details.append({"Id":each._id,"Title":each.name,"Type":",".join(member),"Author":User.objects.get(id=each.created_by).username,"Creation":each.created_at,'member_of':",".join(member_of_list), "collection_list":",".join(collection_list)})
+		objects_details.append({"Id":each._id,"Title":each.name,"Type":", ".join(member),"Author":User.objects.get(id=each.created_by).username,"Creation":each.created_at,'member_of':", ".join(member_of_list), "collection_list":", ".join(collection_list)})
     groups = []
     group = node_collection.find({'_type':"Group"})
     for each in group:
@@ -115,9 +115,7 @@ def adminDesignerDashboardClassCreate(request, class_name='GSystemType', node_id
         options = []
 
     class_structure = eval(class_name).structure
-
     required_fields = eval(class_name).required_fields
-
 
     newdict = {}
     if node_id:
@@ -129,7 +127,7 @@ def adminDesignerDashboardClassCreate(request, class_name='GSystemType', node_id
         if translate:
             new_instance_type = eval("node_collection.collection"+"."+class_name)()
         for key,value in class_structure.items():
-
+            
             if value == bool:
                 if request.POST.get(key,""):
                     if request.POST.get(key,"") in ('1','2'):
@@ -183,6 +181,10 @@ def adminDesignerDashboardClassCreate(request, class_name='GSystemType', node_id
                         for each in request.POST.get(key,"").split(","):
                             listoflist.append(ObjectId(each))
                         new_instance_type[key] = listoflist
+                else:
+                    listoflist=[]
+                    new_instance_type[key]=listoflist
+
 
             elif type(value) == tuple:
                 new_instance_type[key] = tuple(eval(request.POST.get(key,"")))
@@ -203,7 +205,6 @@ def adminDesignerDashboardClassCreate(request, class_name='GSystemType', node_id
                     new_instance_type[key] = int(request.POST.get(key,""))
 
             else: 
-
                 if request.POST.get(key,""):
                     new_instance_type[key] = request.POST.get(key,"")
 
