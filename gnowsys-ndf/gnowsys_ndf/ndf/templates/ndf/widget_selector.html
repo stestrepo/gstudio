@@ -57,7 +57,7 @@ HOW TO USE
   .select-search-container > i.fi-play{
     min-height: 2px ;
     max-height: auto ;
-    max-width: auto ;
+    max-width: 50px ;
     position: absolute;
     right: 12px;
     transform: rotate(90deg);
@@ -66,13 +66,12 @@ HOW TO USE
 
   /*#selected-items > .selection{*/
   .selected-items > .selection{
-    {% if oneline_element %}
-      float: center ;
-      /*width: 50% ;*/
+    {% if oneline_element == "true" %}
+      width: 50% ;
     {% endif %}
-    width: 50% ;
-    float: absolute ;
+    float: center ;
     text-align: center;
+    min-width: 300px;
     margin: 0.25rem 0.5rem;
     background-color: #ffffff;
     border:1px solid #000;
@@ -82,7 +81,7 @@ HOW TO USE
   /*#selected-items{*/
   .selected-items{
     max-height: 200px ;
-    max-width: hidden ;
+    width: 500px ;
     overflow-y : auto ;
     overflow-x: hidden;
   }
@@ -240,7 +239,7 @@ HOW TO USE
     $(".selected-items").sortable({revert: true, scroll: true});
   })
 
-  var selected_options = [ {% for each_opt in selected_options %}"{{each_opt.pk}}"{% if not forloop.last %},{% endif %}{% endfor %} ];
+  var selected_options = [ {% for each_opt in selected_options %}"{{each_opt.pk|safe}}"{% if not forloop.last %},{% endif %}{% endfor %} ];
 
   // toBeSelected = document.getElementById('to-be-selected');
   var toBeSelected = $s('#' + selectorWidgetID + ' .to-be-selected');
