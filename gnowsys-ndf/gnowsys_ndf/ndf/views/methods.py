@@ -2156,7 +2156,7 @@ def create_gattribute(subject_id, attribute_type_node, object_value=None, **kwar
 
       ga_node.object_value = object_value
       ga_node.save()
-
+      # print "\n\n New GAttribute created successfully === ", ga_node.name, " == ",ga_node._id
       if object_value == u"None":
         info_message = " GAttribute ("+ga_node.name+") created successfully with status as 'DELETED'!\n"
 
@@ -2238,7 +2238,6 @@ def create_gattribute(subject_id, attribute_type_node, object_value=None, **kwar
           else:
             ga_node.status = u"PUBLISHED"
             ga_node.save()
-
             info_message = " GAttribute ("+ga_node.name+") updated successfully.\n"
 
             # Fetch corresponding document & update it's attribute_set with proper value
@@ -4223,8 +4222,14 @@ def create_thread_for_node(request, group_id, node):
 			# thread_start_time_status = False
 			# thread_end_time_status = False
 			has_thread_status = False
-			if get_relation_value(node._id,"has_thread") != None:
-				has_thread_status = True
+			# if get_relation_value(node._id,"has_thread") != None:
+			# 	has_thread_status = True
+			grel_dict = get_relation_value(node._id,"has_thread")
+			is_cursor = grel_dict.get("cursor",False)
+			if not is_cursor:
+				thread_node_status = grel_dict.get("grel_node", None)
+				if thread_node_status:
+					has_thread_status = True
 
 			release_response_val = unicode(request.POST.get("release_resp_sel",'True'))
 			interaction_type_val = unicode(request.POST.get("interaction_type_sel",'Comment'))
@@ -4328,14 +4333,18 @@ def node_thread_access(group_id, node):
     allow_to_comment = True  # default set to True to allow commenting if no date is set for thread
     from gnowsys_ndf.ndf.templatetags.ndf_tags import get_relation_value, get_attribute_value
     has_thread_node_thread_grel = get_relation_value(node._id,"has_thread")
+    grel_dict = get_relation_value(node._id,"has_thread")
+    is_cursor = grel_dict.get("cursor",False)
+    if not is_cursor:
+        has_thread_node = grel_dict.get("grel_node")
 
     # if "has_thread" in node:
     #     if node['has_thread']:
     #             has_thread_node = node['has_thread'][0]
-    if has_thread_node_thread_grel:
-        has_thread_node = has_thread_node_thread_grel[0]
-        thread_start_time = get_attribute_value(has_thread_node_thread_grel[0]._id,"start_time")
-        thread_end_time = get_attribute_value(has_thread_node_thread_grel[0]._id,"end_time")
+    if has_thread_node:
+        has_thread_node = has_thread_node_thread_grel['grel_node']
+        thread_start_time = get_attribute_value(has_thread_node._id,"start_time")
+        thread_end_time = get_attribute_value(has_thread_node._id,"end_time")
         # if has_thread_node_thread_grel[0].attribute_set:
         # if get_attribute_value(has_thread_node_thread_grel[0]._id,"start_time")
             # for each_attr in has_thread_node_thread_grel[0].attribute_set:
@@ -4483,6 +4492,7 @@ def get_course_units_tree(data,list_ele):
 
 def replicate_resource(request, node, group_id):
     try:
+        create_thread_for_node_flag = True
         if "Page" in node.member_of_names_list or "QuizItem" in node.member_of_names_list:
             new_gsystem = node_collection.collection.GSystem()
         else:
@@ -4511,14 +4521,29 @@ def replicate_resource(request, node, group_id):
         create_gattribute(new_gsystem._id, discussion_enable_at, False)
         clone_of_RT = node_collection.one({'_type': "RelationType", 'name': "clone_of"})
         create_grelation(new_gsystem._id, clone_of_RT, node._id)
-        if "QuizItem" in node.member_of_names_list:
-            thread_obj = None
-            from gnowsys_ndf.ndf.templatetags.ndf_tags import get_relation_value
-            thread_obj,thread_grel = get_relation_value(node._id,"has_thread")
+        try:
+            if "Page" in node.member_of_names_list:
+                mem_type_of = node.type_of[0]
+                if node_collection.one({'_id': ObjectId(mem_type_of)}).name != "Info page":
+                  create_thread_for_node_flag = False
+        except:
+            pass
+        if create_thread_for_node_flag:
+            thread_obj = create_thread_for_node(request,group_id, new_gsystem)
             if thread_obj != None:
                 has_thread_rt = node_collection.one({"_type": "RelationType", "name": u"has_thread"})
                 gr = create_grelation(new_gsystem._id, has_thread_rt, thread_obj._id)
 
+        if "QuizItem" in node.member_of_names_list:
+            # from gnowsys_ndf.ndf.templatetags.ndf_tags import get_relation_value
+
+            # thread_obj,thread_grel = get_relation_value(node._id,"has_thread")
+            # grel_dict = get_relation_value(node._id,"has_thread")
+            # is_cursor = grel_dict.get("cursor",False)
+            # if not is_cursor:
+            #     thread_obj = grel_dict.get("grel_node")
+            #     thread_grel = grel_dict.get("grel_id")
+    
             # Setup all relevant Attributes for QuizItemEvent
             node.get_neighbourhood(node.member_of)
     
@@ -4544,7 +4569,6 @@ def replicate_resource(request, node, group_id):
                 create_gattribute(new_gsystem._id,quizitem_problem_weight_AT, node.quizitem_problem_weight)
             if node.quizitem_max_attempts:
                 create_gattribute(new_gsystem._id,quizitem_max_attempts_AT, node.quizitem_max_attempts)
-
 
         new_gsystem.reload()
         return new_gsystem
@@ -4627,3 +4651,89 @@ def get_course_completed_ids(list_of_all_ids,children_ids,return_completed_list,
     if children_ids_list:
       get_course_completed_ids(list_of_all_ids,children_ids_list,completed,incompleted)
     return completed, incompleted
+
+@get_execution_time
+def get_group_join_status(group_obj):
+    from gnowsys_ndf.ndf.templatetags.ndf_tags import get_attribute_value
+    allow_to_join = None
+    start_enrollment_date = get_attribute_value(group_obj._id,"start_enroll")
+    last_enrollment_date = get_attribute_value(group_obj._id,"end_enroll")
+    curr_date_time = datetime.now().date()
+
+    if start_enrollment_date and last_enrollment_date:
+      start_enrollment_date = start_enrollment_date.date()
+      last_enrollment_date = last_enrollment_date.date()
+      if start_enrollment_date <= curr_date_time and last_enrollment_date >= curr_date_time:
+          allow_to_join = "Open"
+      else:
+          allow_to_join = "Closed"
+
+    return allow_to_join
+
+@get_execution_time
+def get_course_completetion_status(group_obj, user_id,ids_list=False):
+    result_dict = {'success': False}
+    try:
+      list_of_leaf_node_ids = []
+      all_prior_node_ids = []
+      completed_return_list = []
+      incompleted_return_list = []
+      return_perc = "0"
+      all_res_nodes = []
+      all_coursesection_nodes = []
+      all_res_nodes = dig_nodes_field(group_obj,'collection_set',True,['Page','File'],all_res_nodes)
+      all_coursesection_nodes = dig_nodes_field(group_obj,'collection_set',False,['CourseSectionEvent'],all_coursesection_nodes)
+      twist_gst = node_collection.one({'_type': "GSystemType", 'name': "Twist"})
+      reply_gst = node_collection.one({'_type': "GSystemType", 'name': "Reply"})
+      rec = node_collection.collection.aggregate([
+                  {'$match': {'member_of': twist_gst._id, 'relation_set.thread_of':{'$in': all_res_nodes}, 'author_set': int(user_id)}},
+                  {'$project': {'_id': 1,
+                          'node_id': '$relation_set.thread_of',
+                  }},
+                  ])
+
+      resultlist = rec["result"]
+      if resultlist:
+        for eachele in resultlist:
+          for eachk,eachv in eachele.items():
+            if eachk == "node_id":
+              try:
+                node_id_val = eachv[0][0]
+                list_of_leaf_node_ids.append(node_id_val)
+              except IndexError as ie:
+                pass
+
+      if list_of_leaf_node_ids:
+        list_of_leaf_node_cur = node_collection.find({'_id': {'$in': list_of_leaf_node_ids}})
+        for each_leaf_node in list_of_leaf_node_cur:
+            test_replies_ids = []
+            all_prior_node_ids.extend(dig_nodes_field(each_leaf_node,'prior_node',False, ['CourseSectionEvent', 'CourseSubSectionEvent', 'CourseUnitEvent'],test_replies_ids))
+        # all_prior_node_ids.extend(list_of_leaf_node_ids)
+        all_prior_node_ids = list(set(all_prior_node_ids))
+        # print "\n\n len === ", len(all_prior_node_ids), all_prior_node_ids
+
+      completed_ids_list,incompleted_ids_list = get_course_completed_ids(all_prior_node_ids,list_of_leaf_node_ids,completed_return_list, incompleted_return_list)
+      completed_ids_list.extend(list_of_leaf_node_ids)
+
+
+      ce_gst = node_collection.one({'_type': "GSystemType", 'name': "CourseSectionEvent"})
+      completed_coursesection_nodes = node_collection.find({'_id':{'$in': completed_ids_list}, 'member_of': ce_gst._id},{'_id':1})
+      # print "\ncompleted_coursesection_nodes.count() == ",completed_coursesection_nodes.count()
+      # print "\nlen(all_coursesection_nodes) === ",len(all_coursesection_nodes)
+      count_of_completed_cs = completed_coursesection_nodes.count()
+      count_of_total_cs = len(all_coursesection_nodes)
+      return_perc = (count_of_completed_cs/float(count_of_total_cs))*100
+      # print "\n\n return_perc==== ",return_perc
+      result_dict['course_complete_percentage'] = return_perc
+      result_dict['completed_count'] = count_of_completed_cs
+      result_dict['total_count'] = count_of_total_cs
+
+      if ids_list:
+        result_dict['completed_ids_list'] = json.dumps(completed_ids_list,cls=NodeJSONEncoder)
+        result_dict['incompleted_ids_list'] = json.dumps(incompleted_ids_list,cls=NodeJSONEncoder)
+        result_dict['list_of_leaf_node_ids'] = json.dumps(list_of_leaf_node_ids,cls=NodeJSONEncoder)
+      # print "\n\nresult_dict == ",result_dict
+      return result_dict
+    except Exception as error_in_get_course_completion_status:
+      # print "\n ERROR in get_course_completetion_status", error_in_get_course_completion_status
+      return result_dict
