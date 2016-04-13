@@ -4313,6 +4313,7 @@ def create_thread_for_node(request, group_id, node):
 			return thread_obj
 	except Exception as e:
 		print "000\n\n",e
+
 def node_thread_access(group_id, node):
     """
       Accepts:
@@ -4332,8 +4333,8 @@ def node_thread_access(group_id, node):
     thread_end_time = None
     allow_to_comment = True  # default set to True to allow commenting if no date is set for thread
     from gnowsys_ndf.ndf.templatetags.ndf_tags import get_relation_value, get_attribute_value
-    has_thread_node_thread_grel = get_relation_value(node._id,"has_thread")
-    grel_dict = get_relation_value(node._id,"has_thread")
+    # has_thread_node_thread_grel = get_relation_value(node._id,"has_thread")
+    grel_dict = get_relation_value(node._id,"has_thread", True)
     is_cursor = grel_dict.get("cursor",False)
     if not is_cursor:
         has_thread_node = grel_dict.get("grel_node")
@@ -4342,7 +4343,7 @@ def node_thread_access(group_id, node):
     #     if node['has_thread']:
     #             has_thread_node = node['has_thread'][0]
     if has_thread_node:
-        has_thread_node = has_thread_node_thread_grel['grel_node']
+        has_thread_node = grel_dict['grel_node']
         thread_start_time = get_attribute_value(has_thread_node._id,"start_time")
         thread_end_time = get_attribute_value(has_thread_node._id,"end_time")
         # if has_thread_node_thread_grel[0].attribute_set:
@@ -4517,8 +4518,6 @@ def replicate_resource(request, node, group_id):
         new_gsystem.content_org = node.content_org
         new_gsystem.content = node.content
         new_gsystem.save()
-        discussion_enable_at = node_collection.one({"_type": "AttributeType", "name": "discussion_enable"})
-        create_gattribute(new_gsystem._id, discussion_enable_at, False)
         clone_of_RT = node_collection.one({'_type': "RelationType", 'name': "clone_of"})
         create_grelation(new_gsystem._id, clone_of_RT, node._id)
         try:
@@ -4529,6 +4528,8 @@ def replicate_resource(request, node, group_id):
         except:
             pass
         if create_thread_for_node_flag:
+            discussion_enable_at = node_collection.one({"_type": "AttributeType", "name": "discussion_enable"})
+            create_gattribute(new_gsystem._id, discussion_enable_at, False)
             thread_obj = create_thread_for_node(request,group_id, new_gsystem)
             if thread_obj != None:
                 has_thread_rt = node_collection.one({"_type": "RelationType", "name": u"has_thread"})
@@ -4600,6 +4601,7 @@ def dig_nodes_field(parent_node, field_name="collection_set", only_leaf_nodes=Fa
     result = dig_nodes_field(node_obj,'collection_set',True,test_list,['Page','File])
   '''
   # print "\n\n Node name -- ", parent_node.name, "-- ",parent_node[field_name]
+
   for each_id in parent_node[field_name]:
     if each_id not in list_of_node_ids:
       each_obj = node_collection.one({'_id': ObjectId(each_id)})
@@ -4616,6 +4618,7 @@ def dig_nodes_field(parent_node, field_name="collection_set", only_leaf_nodes=Fa
             list_of_node_ids.append(each_id)
         else:
             list_of_node_ids.append(each_id)
+
       dig_nodes_field(each_obj, field_name,only_leaf_nodes, member_of, list_of_node_ids)
 
   # print "\n len(list_of_node_ids) -- ",len(list_of_node_ids)
@@ -4650,6 +4653,7 @@ def get_course_completed_ids(list_of_all_ids,children_ids,return_completed_list,
     # print "\n\n incompleted_ids_list1 --- ", incompleted
     if children_ids_list:
       get_course_completed_ids(list_of_all_ids,children_ids_list,completed,incompleted)
+
     return completed, incompleted
 
 @get_execution_time
@@ -4681,10 +4685,11 @@ def get_course_completetion_status(group_obj, user_id,ids_list=False):
       return_perc = "0"
       all_res_nodes = []
       all_coursesection_nodes = []
-      all_res_nodes = dig_nodes_field(group_obj,'collection_set',True,['Page','File'],all_res_nodes)
+      all_res_nodes = dig_nodes_field(group_obj,'collection_set',True,['Page','File', 'QuizItemEvent'],all_res_nodes)
+      # print "\nall_res_nodes",all_res_nodes
       all_coursesection_nodes = dig_nodes_field(group_obj,'collection_set',False,['CourseSectionEvent'],all_coursesection_nodes)
       twist_gst = node_collection.one({'_type': "GSystemType", 'name': "Twist"})
-      reply_gst = node_collection.one({'_type': "GSystemType", 'name': "Reply"})
+      # reply_gst = node_collection.one({'_type': "GSystemType", 'name': "Reply"})
       rec = node_collection.collection.aggregate([
                   {'$match': {'member_of': twist_gst._id, 'relation_set.thread_of':{'$in': all_res_nodes}, 'author_set': int(user_id)}},
                   {'$project': {'_id': 1,
@@ -4693,6 +4698,7 @@ def get_course_completetion_status(group_obj, user_id,ids_list=False):
                   ])
 
       resultlist = rec["result"]
+      
       if resultlist:
         for eachele in resultlist:
           for eachk,eachv in eachele.items():

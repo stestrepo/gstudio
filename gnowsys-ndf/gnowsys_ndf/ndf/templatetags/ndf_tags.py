@@ -113,6 +113,7 @@ def get_site_variables():
 	site_var['SECOND_LEVEL_HEADER'] = GSTUDIO_SECOND_LEVEL_HEADER
 	site_var['MY_GROUPS_IN_HEADER'] = GSTUDIO_MY_GROUPS_IN_HEADER
 	site_var['MY_COURSES_IN_HEADER'] = GSTUDIO_MY_COURSES_IN_HEADER
+	site_var['MY_DASHBOARD_IN_HEADER'] = GSTUDIO_MY_DASHBOARD_IN_HEADER
 	site_var['ISSUES_PAGE'] = GSTUDIO_SITE_ISSUES_PAGE
 
 	cache.set('site_var', site_var, 60 * 30)
@@ -528,7 +529,7 @@ def get_attribute_value(node_id, attr,get_data_type=False):
 
 @get_execution_time
 @register.assignment_tag
-def get_relation_value(node_id, grel):
+def get_relation_value(node_id, grel, return_single_right_subject=False):
 	try:
 		result_dict = {}
 		if node_id:
@@ -544,9 +545,13 @@ def get_relation_value(node_id, grel):
 							grel_val.append(each_node.right_subject)
 							grel_id.append(each_node._id)
 						grel_val_node_cur = node_collection.find({'_id':{'$in' : grel_val}})
+						result_dict.update({"cursor": True})
+						if return_single_right_subject:
+							grel_val_node_cur = node_collection.find_one({'_id':{'$in' : grel_val}})
+							result_dict.update({"cursor": False})
 						# nodes = [grel_node_val for grel_node_val in grel_val_node_cur]
 						# print "\n\n grel_val_node, grel_id == ",grel_val_node, grel_id
-						result_dict.update({"grel_id": grel_id, "grel_node": grel_val_node_cur, "cursor": True})
+						result_dict.update({"grel_id": grel_id, "grel_node": grel_val_node_cur})
 				else:
 					node_grel = triple_collection.one({'_type': "GRelation", "subject": node._id, 'relation_type.$id': relation_type_node._id,'status':"PUBLISHED"})
 					if node_grel:
@@ -3167,6 +3172,11 @@ def get_gstudio_social_share_resource():
 @register.assignment_tag
 def get_ebook_help_text():
 	return GSTUDIO_EBOOKS_HELP_TEXT
+
+@get_execution_time
+@register.assignment_tag
+def get_gstudio_interaction_types():
+	return GSTUDIO_INTERACTION_TYPES
 
 @get_execution_time
 @register.assignment_tag
